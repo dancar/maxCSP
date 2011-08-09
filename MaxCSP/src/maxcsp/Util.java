@@ -1,5 +1,5 @@
 package maxcsp;
-//Nothing
+//Nothing 2
 public class Util {
 	public static boolean chance(double probability){
 		return (Math.random()>probability);
