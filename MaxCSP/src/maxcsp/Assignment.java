@@ -15,6 +15,11 @@ public class Assignment implements Serializable {
 		for(int i: this._assigns)
 			this._assigns[i]=UNASSIGNED;
 	}
+	public Assignment(Assignment other){
+		this._assigns=new int[other._assigns.length];
+		for(int i: other._assigns)
+			this._assigns[i]=other._assigns[i];
+	}
 	public void assign(int var, int value){
 		this._assigns[var]=value;
 	}
