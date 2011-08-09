@@ -70,6 +70,9 @@ public class Problem implements Serializable{
 		}
 		return ans;
 	}	
+	public int getCCs(){
+		return this._CCs;
+	}
 	
 	
 	
