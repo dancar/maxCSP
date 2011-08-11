@@ -88,9 +88,4 @@ public class Util {
 		return (int)((n*(n-1))/2);
 	}
 	
-	public static void nothing(){
-		
-		//bla bla bla;
-	}
-	
 }
