@@ -65,7 +65,6 @@ public class Problem implements Serializable{
 		Iterator<Constraint> itr = constraints.iterator();
 		while(itr.hasNext()){
 			Constraint c = itr.next();
-//			Logger.inst().debug("Adding constraint:" + c);
 			this._constraints.put(new UnorderedPair<Variable>(c._var1,c._var2), c);
 		}
 	}
@@ -90,10 +89,6 @@ public class Problem implements Serializable{
 	public int getCCs(){
 		return this._CCs;
 	}
-	
-	
-	
-	
 	
 	
 }

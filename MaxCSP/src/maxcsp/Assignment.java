@@ -14,7 +14,6 @@ public class Assignment implements Serializable {
 	private int _assignsCount;
 	public int _distance;
 	
-	
 	public Assignment(int varsCount){
 		this._distance=0;
 		this._assignsCount=0;
