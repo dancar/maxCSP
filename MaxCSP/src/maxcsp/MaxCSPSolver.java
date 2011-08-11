@@ -6,48 +6,64 @@ import java.util.Iterator;
 public class MaxCSPSolver implements Serializable{
 	private static final long serialVersionUID = -2450853734027328704L;
 	public final Problem _problem;
+	private Assignment _bestAssignment;
+	private int _upperBound;
 	public MaxCSPSolver(Problem problem){
 		this._problem=problem;
 	}
 	
 	public Solution solve(){
-		Logger.inst().debug("Solve: starting varscount: " + _problem._varCount);
+		_upperBound=Integer.MAX_VALUE;
 		Assignment init = new Assignment(_problem._varCount);
 		init._distance=0;
-		Assignment solutionAssignment = branch(init,Integer.MAX_VALUE);
-		return new Solution(solutionAssignment,_problem.getCCs());
+		branch(init);
+		return new Solution(_bestAssignment,_problem.getCCs());
 	}
-	protected Assignment branch(Assignment partial, int upperBound){
-		Logger.inst().debug(String.format("branch in , assignment: %s, UB: %d", partial, upperBound));
-		Assignment ans=null;
-		int newUpperBound = upperBound;
-		if(partial.isComplete())
-			ans = partial;
+	protected void branch(Assignment partial){
+		if(partial.isComplete()){
+			if(partial._distance<_upperBound){
+				_upperBound=partial._distance;
+				_bestAssignment=partial;
+			}
+		}
 		else{
 			Variable variable = partial.pickUnassignedVariable();
 			Assignment newAssignment = new Assignment(partial);
 			Iterator<Integer> values = _problem._domain.iterator();		
 			while(values.hasNext()){
-				newAssignment.assign(variable.assign(values.next()));
+				variable.assign(values.next());
+				newAssignment.assign(variable);
 				newAssignment._distance=partial._distance + calcSingleVariableDistance(variable,newAssignment);
-				if (calcLowerBound(newAssignment)<newUpperBound){
-					Assignment rest = branch(newAssignment,newUpperBound);
-					if(rest!=null && rest._distance<newUpperBound){
-						newUpperBound=rest._distance;
-						ans=rest;
-					}
+				int lowerBound=bound(newAssignment);
+				if (lowerBound>_upperBound){
+					// -- prune --
+					//(do nothing)
+				}
+				else{
+					branch(newAssignment);
 				}
 			}
-			
 		}
-		Logger.inst().debug(String.format("branch out , assignment: %s, UB: %d", partial, upperBound));
-		return ans;
 	}
 	
-	protected int calcLowerBound(Assignment ass){
+	/**
+	 * bound search
+	 * Assumes partial assignment's _distance is properly calculated in advanced.
+	 * @param ass partial assignment
+	 * @return new lower bound with respect to the given partial assignment
+	 */
+	protected int bound(Assignment ass){
+		//simplest calculation
 		return ass._distance;
 	}
 	
+	/**
+	 * Calculates the distance a single variable adds to an existing partial assignment.
+	 * Assumes the desired variable is assigned.
+	 * @param assignedVar Which variable to observe
+	 * @param ass partial assignment
+	 * @return the distance contributed by the aforementioned variable.
+	 */
 	protected int calcSingleVariableDistance(Variable assignedVar, Assignment ass){
 		int ans = 0;
 		Iterator<Variable> assignedVars = ass.assignedVariablesIterator();

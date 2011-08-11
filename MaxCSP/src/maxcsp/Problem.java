@@ -89,6 +89,13 @@ public class Problem implements Serializable{
 	public int getCCs(){
 		return this._CCs;
 	}
+	@Override
+	public String toString(){
+		String ans = String.format("CSP: Vars=%d, Domain=%d, P1=%1.2f, P2=%1.2f.", 
+				_varCount,_domainSize,_P1,_P2
+				);
+		return ans;
+	}
 	
 	
 }
