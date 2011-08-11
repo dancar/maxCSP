@@ -133,4 +133,14 @@ public class Assignment implements Serializable {
 		}while(ans.isAssigned());
 		return new Variable(ans);
 	}
+	@Override
+	public String toString(){
+		String ans = "";
+		Iterator<Variable> itr = _vars.iterator();
+		while(itr.hasNext()){
+			Variable v = itr.next();
+			ans+=String.format("<%d,%d>%s",v._id,v.value(),(itr.hasNext() ? ", " : "."));
+		}
+		return ans;
+	}
 }

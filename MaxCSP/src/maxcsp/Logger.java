@@ -8,6 +8,11 @@ public class Logger {
 		return Logger._inst;
 	}
 	public void debug(String msg){
-		System.out.println(msg);
+		debug(msg, true);
 	}
+	public void debug(String msg, boolean line){
+		System.out.print(msg);
+		if(line) System.out.println();
+	}
+	
 }
