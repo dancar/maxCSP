@@ -34,9 +34,8 @@ public class MaxCSPSolver implements Serializable{
 		else{ //INNER NODE
 			Variable variable = partial.pickUnassignedVariable();
 			Assignment newAssignment = new Assignment(partial);
-			Iterator<Integer> values = _problem._domain.iterator();		
-			while(values.hasNext()){
-				variable.assign(values.next());
+			for(Integer value : _problem._domain){	
+				variable.assign(value);
 				newAssignment.assign(variable);
 				_assignments++;
 				newAssignment._distance=
@@ -68,9 +67,6 @@ public class MaxCSPSolver implements Serializable{
 	/**
 	 * Calculates the distance a single variable adds to an existing partial assignment.
 	 * Assumes the desired variable is assigned.
-	 * @param assignedVar Which variable to observe
-	 * @param ass partial assignment
-	 * @return the distance contributed by the aforementioned variable.
 	 */
 	protected int calcSingleVariableDistance(Variable assignedVar, Assignment ass){
 		int ans = 0;
@@ -82,7 +78,17 @@ public class MaxCSPSolver implements Serializable{
 				if(!_problem.check(assignedVar, nextVar))
 					ans++;
 			}
-		}
+		} 
+		return ans;
+	}
+	/**
+	 * Same as above, but with a given value to be assigned to the variable. 
+	 */
+	protected int calcSingleVariableDistance(Variable var, Integer value,
+			Assignment ass) {
+		ass.assign(var.assign(value));
+		int ans = calcSingleVariableDistance(var, ass);
+		ass.unassign(var);
 		return ans;
 	}
 

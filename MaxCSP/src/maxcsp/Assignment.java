@@ -1,6 +1,7 @@
 package maxcsp;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Vector;
 
@@ -78,6 +79,12 @@ public class Assignment implements Serializable {
 	}
 	
 	public Iterator<Variable> assignedVariablesIterator(){
+		return variablesIterator(true);
+	}
+	public Iterator<Variable> unassignedVariablesIterator(){
+		return variablesIterator(false);
+	}
+	private Iterator<Variable> variablesIterator(final boolean assignedVars){
 		return new Iterator<Variable>(){
 			Variable cur;
 			Iterator<Variable> itr ;
@@ -89,7 +96,7 @@ public class Assignment implements Serializable {
 				cur=null;
 				while(cur==null & itr.hasNext()){
 					Variable next = itr.next();
-					if(next.isAssigned())
+					if(next.isAssigned()==assignedVars)
 						cur = next;
 				}
 			}
@@ -141,6 +148,13 @@ public class Assignment implements Serializable {
 			Variable v = itr.next();
 			ans+=String.format("<%d,%d>%s",v._id,v.value(),(itr.hasNext() ? ", " : "."));
 		}
+		return ans;
+	}
+	
+	public Collection<Variable>getUnassignedVars(){
+		Vector<Variable> ans = new Vector<Variable>(_vars.size());
+		Iterator<Variable> itr = unassignedVariablesIterator();
+		while(itr.hasNext())ans.add(itr.next());
 		return ans;
 	}
 }

@@ -5,6 +5,24 @@ import java.util.Iterator;
 import java.util.Vector;
 
 public class Util {
+	@SuppressWarnings("rawtypes")
+	private static Class[] _solvers={MaxCSPSolver.class,PFC.class};;
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Vector<MaxCSPSolver> makeSolvers(Problem p){
+		Vector<MaxCSPSolver> ans = new Vector<MaxCSPSolver>(_solvers.length);
+		Class[] arg = {Problem.class};
+		for(int i=0;i<_solvers.length;i++){
+			MaxCSPSolver solver = null;
+			try {
+				solver=(MaxCSPSolver) _solvers[i].getConstructor(arg).newInstance(p);
+			} catch (Exception e) {
+				e.printStackTrace();
+				Util.panic("Solvers Sanity check");
+			}
+			ans.add(solver);
+		}
+		return ans;
+	}
 	public static boolean chance(double probability){
 		return (Math.random()<probability);
 	}
