@@ -10,27 +10,28 @@ public class MaxCSPSolver implements Serializable{
 	private int _upperBound;
 	private int _ccs;
 	private int _assignments;
+	
 	public MaxCSPSolver(Problem problem){
 		this._problem=problem;
 	}
 	
 	public Assignment solve(){
-		_upperBound=Integer.MAX_VALUE;
 		_ccs=0;
 		_assignments=0;
+		_upperBound=Integer.MAX_VALUE;
 		Assignment init = new Assignment(_problem._varCount);
 		init._distance=0;
 		branch(init);
 		return new Assignment(_bestAssignment);
 	}
 	protected void branch(Assignment partial){
-		if(partial.isComplete()){
+		if(partial.isComplete()){ //LEAF
 			if(partial._distance<_upperBound){
 				_upperBound=partial._distance;
 				_bestAssignment=new Assignment(partial);
 			}
 		}
-		else{
+		else{ //INNER NODE
 			Variable variable = partial.pickUnassignedVariable();
 			Assignment newAssignment = new Assignment(partial);
 			Iterator<Integer> values = _problem._domain.iterator();		
