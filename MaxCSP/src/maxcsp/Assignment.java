@@ -78,47 +78,6 @@ public class Assignment implements Serializable {
 		return this._assignsCount==this._vars.size();
 	}
 	
-	public Iterator<Variable> assignedVariablesIterator(){
-		return variablesIterator(true);
-	}
-	public Iterator<Variable> unassignedVariablesIterator(){
-		return variablesIterator(false);
-	}
-	private Iterator<Variable> variablesIterator(final boolean assignedVars){
-		return new Iterator<Variable>(){
-			Variable cur;
-			Iterator<Variable> itr ;
-			{
-				itr = _vars.iterator();
-				goNext();
-			}
-			private void goNext(){
-				cur=null;
-				while(cur==null & itr.hasNext()){
-					Variable next = itr.next();
-					if(next.isAssigned()==assignedVars)
-						cur = next;
-				}
-			}
-			@Override
-			public boolean hasNext() {
-				return cur!=null;
-			}
-
-			@Override
-			public Variable next() {
-				Variable ans = new Variable(cur);
-				goNext();
-				return ans;
-			}
-
-			@Override
-			public void remove() {
-				Util.panic("Assignment Iterator Remove");
-			}
-			
-		};
-	}
 	public void assign(Variable var) {
 		if(!var.isAssigned())
 			Util.panic("Assignment - variable given is not assigned a value");
@@ -152,9 +111,18 @@ public class Assignment implements Serializable {
 	}
 	
 	public Collection<Variable>getUnassignedVars(){
-		Vector<Variable> ans = new Vector<Variable>(_vars.size());
-		Iterator<Variable> itr = unassignedVariablesIterator();
-		while(itr.hasNext())ans.add(itr.next());
+		return getVariables(false);
+	}
+	public Collection<Variable>getAssignedVars(){
+		return getVariables(true);
+	}
+	
+	public Collection<Variable>getVariables(boolean cond){
+		Collection<Variable> ans = new Vector<Variable>();
+		for(Variable v : _vars){
+			if(v.isAssigned()==cond)
+				ans.add(new Variable(v));
+		}
 		return ans;
 	}
 }

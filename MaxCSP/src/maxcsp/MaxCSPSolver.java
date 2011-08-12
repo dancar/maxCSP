@@ -70,9 +70,7 @@ public class MaxCSPSolver implements Serializable{
 	 */
 	protected int calcSingleVariableDistance(Variable assignedVar, Assignment ass){
 		int ans = 0;
-		Iterator<Variable> assignedVars = ass.assignedVariablesIterator();
-		while(assignedVars.hasNext()){
-			Variable nextVar = assignedVars.next();
+		for(Variable nextVar : ass.getAssignedVars()){ 
 			if(!nextVar.equals(assignedVar)){
 				_ccs++;
 				if(!_problem.check(assignedVar, nextVar))
