@@ -15,5 +15,9 @@ public class PFCDAC extends PFC {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	protected void proprocess(){
+		//init DAC databases.
+	}
 
 }

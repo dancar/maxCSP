@@ -14,11 +14,14 @@ public class MaxCSPSolver implements Serializable{
 	public MaxCSPSolver(Problem problem){
 		this._problem=problem;
 	}
-	
+	protected void preprocess(){
+		//for subclasses to override.
+	}
 	public Assignment solve(){
 		_ccs=0;
 		_assignments=0;
 		_upperBound=Integer.MAX_VALUE;
+		this.preprocess();
 		Assignment init = new Assignment(_problem._varCount);
 		init._distance=0;
 		branch(init);
@@ -74,11 +77,15 @@ public class MaxCSPSolver implements Serializable{
 		int ans = 0;
 		for(Variable nextVar : ass.getAssignedVars()){ 
 			if(!nextVar.equals(assignedVar)){
-				_ccs++;
-				if(!_problem.check(assignedVar, nextVar))
+				if(!check(assignedVar, nextVar))
 					ans++;
 			}
 		} 
+		return ans;
+	}
+	protected boolean check(Variable assignedVar1, Variable assignedVar2) {
+		boolean ans = _problem.check(assignedVar1, assignedVar2);
+		_ccs++;
 		return ans;
 	}
 	/**
