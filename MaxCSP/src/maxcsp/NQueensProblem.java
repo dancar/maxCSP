@@ -13,20 +13,14 @@ public class NQueensProblem extends Problem {
 
 	private static Collection<Constraint> createConstraints(int n) {
 		Collection<Constraint> constraints = new Vector<Constraint>(n*n);
-		for(int i=0;i<n;i++){
-			for (int j=i+1;j<n;j++){
+		for(int queenLeft=0;queenLeft<n;queenLeft++){
+			for (int queenRight=queenLeft+1;queenRight<n;queenRight++){
 				Vector<IntPair>allowedValues = new Vector<IntPair>();
-				Iterator<OrderedPair<Integer>> possibleValues = Util.pairsIterator(Util.numlist(n));
-				while(possibleValues.hasNext()){
-					OrderedPair<Integer> ip = possibleValues.next();
-					int x = ip._left;
-					int y = ip._right;
-					boolean ok = true;
-					ok &= x!=y;
-					ok &= Math.abs(j-i)!=Math.abs(y-x);
-					if(ok) allowedValues.add(ip);
+				for(int valueLeft : Util.numlist(n))for(int valueRight:Util.numlist(n)){
+					if((valueLeft!=valueRight)
+						&(Math.abs(queenLeft-queenRight)!=Math.abs(valueLeft-valueRight)))						allowedValues.add(new IntPair(valueLeft,valueRight));
 				}
-				constraints.add(new Constraint(new Variable(i), new Variable(j), allowedValues));
+				constraints.add(new Constraint(queenLeft, queenRight, allowedValues));
 			}
 		}
 		return constraints;
@@ -35,7 +29,7 @@ public class NQueensProblem extends Problem {
 		String ans="";
 		for(int i=0;i<_n;i++){
 			for(int j=0;j<_n;j++){
-				if(j==sol.value(new Variable(i))){
+				if(j==sol.value(i)){
 					ans+="X";
 				}
 				else{
@@ -44,8 +38,6 @@ public class NQueensProblem extends Problem {
 			}
 			ans+="\n";
 		}
-		
 		return ans;
-				
 	}
 }
