@@ -15,7 +15,7 @@ public class NQueensProblem extends Problem {
 		Collection<Constraint> constraints = new Vector<Constraint>(n*n);
 		for(int i=0;i<n;i++){
 			for (int j=i+1;j<n;j++){
-				Collection<OrderedPair<Integer>>allowedValues = new Vector<OrderedPair<Integer>>();
+				Vector<IntPair>allowedValues = new Vector<IntPair>();
 				Iterator<OrderedPair<Integer>> possibleValues = Util.pairsIterator(Util.numlist(n));
 				while(possibleValues.hasNext()){
 					OrderedPair<Integer> ip = possibleValues.next();
