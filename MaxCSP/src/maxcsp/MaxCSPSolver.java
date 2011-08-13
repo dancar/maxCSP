@@ -54,13 +54,15 @@ public class MaxCSPSolver implements Serializable{
 	}
 	
 	/**
-	 * bound search
+	 * lower bound calculation
 	 * Assumes partial assignment's _distance is properly calculated in advanced.
-	 * @param ass partial assignment
-	 * @return new lower bound with respect to the given partial assignment
 	 */
 	protected int bound(Assignment ass){
 		//simplest calculation
+		return calcDistance(ass);
+	}
+	
+	protected int calcDistance(Assignment ass){
 		return ass._distance;
 	}
 	
@@ -98,5 +100,9 @@ public class MaxCSPSolver implements Serializable{
 	}
 	public int solutionAssignments(){
 		return _assignments;
+	}
+
+	public String getName() {
+		return "B&B";
 	}
 }
