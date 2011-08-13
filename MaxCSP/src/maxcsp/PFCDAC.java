@@ -6,11 +6,6 @@ public class PFCDAC extends PFC {
 		super(problem);
 	}
 	
-	@Override 
-	protected int bound(Assignment ass){
-		return calcDistance(ass) + calcIC(ass) + calcDAC(ass);
-	}
-
 	private int calcDAC(Assignment ass) {
 		// TODO Auto-generated method stub
 		return 0;

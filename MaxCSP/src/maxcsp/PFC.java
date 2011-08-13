@@ -1,24 +1,27 @@
 package maxcsp;
 
-public class PFC extends MaxCSPSolver {
+public class PFC extends BranchAndBoundSolver {
 
 	public PFC(Problem problem) {
 		super(problem);
 	}
+	
 	@Override
-	protected int bound(Assignment ass){
-		return calcDistance(ass) + calcIC(ass);
+	protected int lookahead(Assignment ass,int var, int value){
+		return calcIC(ass);
 	}
 	
 	protected int calcIC(Assignment ass){
 		int ans = 0;
-		for(Variable var : ass.getUnassignedVars()){
-			int varMinConflicts = Integer.MAX_VALUE;
-			for(Integer value : _problem._domain){
-				int ic = calcSingleVariableDistance(var, value, ass);
-				varMinConflicts = Math.min(varMinConflicts, ic);
+		for(int var : _problem._vars){
+			if(!ass.isAssigned(var)){
+				int varMinConflicts = Integer.MAX_VALUE;
+				for(int value : _problem._domain){
+					int ic = calcSingleVariableDistance(var, value, ass);//TODO: cache
+					varMinConflicts = Math.min(varMinConflicts, ic);
+				}
+				ans+=varMinConflicts;
 			}
-			ans+=varMinConflicts;
 		}
 		return ans;
 	}

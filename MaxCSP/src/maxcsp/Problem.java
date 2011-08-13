@@ -17,23 +17,20 @@ public class Problem {
 	public final double _P1;
 	public final double _P2;
 	public final int[] _vars;
+	public final int[] _domain;
 	protected final Map<IntPair, Constraint> _constraints;
 	
-	public Problem(int varCount, int domainSize, double p1, double p2) {
-		this._varCount = varCount;
-		this._domainSize = domainSize;
-		this._P1 = p1;
-		this._P2 = p2;
-		this._constraints=new HashMap<IntPair, Constraint>();
-		_vars=Util.numlist(varCount);
-		int[] domain = Util.numlist(domainSize);
-		for(int varLeft=0;varLeft<varCount;varLeft++){
-			for(int varRight=varLeft+1;varRight<varCount;varRight++){
+
+	
+	public Problem(int varsCount, int domainSize, double p1, double p2) {
+		this(varsCount, domainSize, p1, p2,new Vector<Constraint>());
+		for(int varLeft=0;varLeft<varsCount;varLeft++){
+			for(int varRight=varLeft+1;varRight<varsCount;varRight++){
 				if (Util.chance(p1)){
 					Vector<IntPair> possibleValues = new Vector<IntPair>((int)Math.pow(domainSize,2));
 					boolean addConstraint = false;
-					for(int valueLeft:domain){
-						for(int valueRight:domain){
+					for(int valueLeft:_domain){
+						for(int valueRight:_domain){
 							if(!Util.chance(p2)){
 								possibleValues.add(new IntPair(valueLeft,valueRight));
 							}
@@ -62,6 +59,7 @@ public class Problem {
 		this._P2=p2;
 		this._constraints=new HashMap<IntPair,Constraint>();
 		this._vars=Util.numlist(varsCount);
+		this._domain = Util.numlist(domainSize);
 		for(Constraint c : constraints){
 			this._constraints.put(new IntPair(c._leftVar,c._rightVar), c);
 		}

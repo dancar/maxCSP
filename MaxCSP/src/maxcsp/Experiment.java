@@ -89,8 +89,8 @@ public class Experiment implements Runnable{
 				out("\n#" + i + ": " + p);
 				out(String.format(outFormat,"Solver", "Ccs", "Assignments" ));
 				out("---------------------------------------------------------------");
-				Vector<MaxCSPSolver> solvers = Util.makeSolvers(p);
-				for(MaxCSPSolver solver : solvers){
+				Vector<BranchAndBoundSolver> solvers = Util.makeSolvers(p);
+				for(BranchAndBoundSolver solver : solvers){
 					solver.solve();
 					String key = solver.getName();
 					int newCcs = solver.solutionCCs();
