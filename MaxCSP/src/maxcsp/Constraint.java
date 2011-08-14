@@ -12,7 +12,8 @@ public class Constraint{
 		super();
 		this._leftVar = _leftVar;
 		this._rightVar = _rightVar;
-		this._allowedValues = _alloedValues;
+		this._allowedValues = new Vector<IntPair>(_alloedValues);
+		
 	}
 	public boolean consistent(int left, int right){
 		for(IntPair p : _allowedValues)

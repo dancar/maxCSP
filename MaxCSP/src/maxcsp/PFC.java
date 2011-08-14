@@ -7,23 +7,23 @@ public class PFC extends BranchAndBoundSolver {
 	}
 	
 	@Override
-	protected int lookahead(Assignment ass,int var, int value){
-		return calcIC(ass);
-	}
-	
-	protected int calcIC(Assignment ass){
+	protected int lookahead(Assignment ass,int var, int val){
 		int ans = 0;
-		for(int var : _problem._vars){
-			if(!ass.isAssigned(var)){
+		for(int unassignedVar : _problem._vars){
+			if(!ass.isAssigned(unassignedVar)){
 				int varMinConflicts = Integer.MAX_VALUE;
 				for(int value : _problem._domain){
-					int ic = calcSingleVariableDistance(var, value, ass);//TODO: cache
+					int ic = calcIC(ass,unassignedVar, value);//TODO: cache
 					varMinConflicts = Math.min(varMinConflicts, ic);
 				}
 				ans+=varMinConflicts;
 			}
 		}
 		return ans;
+	}
+	
+	protected int calcIC(Assignment ass,int var, int val){
+		return calcSingleVariableDistance(var, val, ass);		
 	}
 	public String getName() {
 		return "PFC";

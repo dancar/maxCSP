@@ -67,7 +67,7 @@ public class Problem {
 	
 	public boolean check(int var1, int value1, int var2, int value2){
 		boolean ans = true;
-		if(Util.order(0,var1,var2,_varCount)){
+		if(Util.order(-1,var1,var2,_varCount)){
 			Constraint c = this._constraints.get(new IntPair(var1,var2));
 			if(c!=null){ //Variables are constrained
 				//Sanity check:
@@ -76,11 +76,11 @@ public class Problem {
 				ans=c.consistent(value1,value2);
 			}
 		}
-		else if(Util.order(0,var2,var1,_varCount)){
+		else if(Util.order(-1,var2,var1,_varCount)){
 			ans = check(var2,value2,var1,value1);
 		}
 		else{
-			Util.panic("Problem check: invalud variables");
+			Util.panic(String.format("Problem check: invalid variables: %d, %d, count:",var1,var2,_varCount));
 		}
 		return ans;
 		
@@ -91,8 +91,8 @@ public class Problem {
 				_varCount,_domainSize,_P1,_P2
 				);
 		return ans;
-	}
 	
+	}
 	public static final String P_VARIABLE_COUNT="variable_count";
 	public static final String P_DOMAIN_SIZE="domain_size";
 	public static final String P_P1 = "p1";
@@ -120,12 +120,12 @@ public class Problem {
 			ans+=printProperty(String.format(P_CONSTRAINT,c_counter,P_VAR_LEFT), variables._left);
 			ans+=printProperty(String.format(P_CONSTRAINT,c_counter,P_VAR_RIGHT), variables._right);
 			String list = "";
-			for(IntPair values : _constraints.get(variables).getAllowedValues()){
+			for(IntPair values : c.getAllowedValues()){
 				list+=values._left+ P_PAIR_SPLIT +values._right 
 						+  P_LIST_SPLIT;
 				
 			}
-			list=list.substring(0,list.length()-1);
+			if (c.getAllowedValues().size()>0)list=list.substring(0,list.length()-1);
 			ans+=printProperty(String.format(P_CONSTRAINT, c_counter,P_POSSIBLE_VALUES),list);
 			c_counter++;
 		}

@@ -1,14 +1,23 @@
 package maxcsp;
 
 public class BranchAndBoundSolver implements MaxCSPSolver{
+	private static final int UNKNOWN = -1;
+	private static final int CONFLICT= 0;
+	private static final int CONSISTENT = 1;
 	public final Problem _problem;
 	private Assignment _bestAssignment;
 	private int _upperBound;
 	private int _ccs;
 	private int _assignments;
-	
+	private int[][][][]_checks;
 	public BranchAndBoundSolver(Problem problem){
 		this._problem=problem;
+		_checks=new int[problem._varCount][problem._domainSize][problem._varCount][problem._domainSize];
+		for(int[][][] var1:_checks)
+			for(int[][] val1: var1)
+				for(int[] var2: val1)
+					for(int val2=0;val2<var2.length;val2++)
+						var2[val2]=UNKNOWN;
 	}
 	
 	public Assignment solve(){
@@ -48,7 +57,7 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	 * lookahead calculation - should be overridden by subclasses.
 	 */
 	protected int lookahead(Assignment ass, int var, int value){
-		return 0;
+		return 0; //No lookahead.
 	}
 	
 	/**
@@ -68,9 +77,13 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 		return ans;
 	}
 	protected boolean check(int var1, int value1, int var2, int value2) {
-		boolean ans = _problem.check(var1, value1, var2, value2);
-		_ccs++;
-		return ans;
+		int cache=_checks[var1][value1][var2][value2];
+		if(cache==UNKNOWN){
+			cache=_problem.check(var1, value1, var2, value2)?CONSISTENT:CONFLICT;
+			_ccs++;
+			_checks[var1][value1][var2][value2]=cache;
+		}
+		return cache==CONSISTENT;
 	}
 	
 	public int solutionCost() {

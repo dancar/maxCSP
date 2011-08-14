@@ -7,8 +7,8 @@ public class Assignment{
 	public Assignment(int varsCount){
 		_vars=new int[varsCount];
 		_assignedCount=0;
-		for(int i : _vars){
-			i=UNASSIGNED;
+		for(int i=0;i<_vars.length;i++){
+			_vars[i]=UNASSIGNED;
 		}
 	}
 	public void assign(int var, int value){
