@@ -3,11 +3,18 @@ package maxcsp;
 import java.util.Vector;
 
 public class Util {
-	public static Vector<BranchAndBoundSolver> makeSolvers(Problem p){
-		Vector<BranchAndBoundSolver> ans = new Vector<BranchAndBoundSolver>();
+	public static Vector<MaxCSPSolver> makeSolvers(Problem p){
+		Vector<MaxCSPSolver> ans = new Vector<MaxCSPSolver>();
 		ans.add(new BranchAndBoundSolver(p));
 		ans.add(new PFC(p));
 		ans.add(new PFCDAC(p));
+		return ans;
+	}
+	
+	public static Vector<String> getSolversNames(){
+		Vector<String>ans = new Vector<String>();
+		for(MaxCSPSolver solver:  makeSolvers(new Problem(1,1,1,1)))
+			ans.add(solver.getName());
 		return ans;
 	}
 	public static boolean chance(double probability){

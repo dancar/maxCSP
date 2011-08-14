@@ -36,7 +36,7 @@ public class PFCDAC extends PFC {
 	
 	@Override
 	public String getName() {
-		return "PFC-DAC";
+		return "PFC_DAC";
 	}
 	
 

@@ -1,24 +1,28 @@
 package maxcsp;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
 
 public class Experiment implements Runnable{
-	public static final int DEFAULT_PROBLEMS_COUNT = 35;
-	public final static int DEFAULT_VARS_COUNT=10;
-	public final static int DEFAULT_DOMAIN_SIZE=15;
+	
+	
+	public static final int DEFAULT_PROBLEMS_COUNT = 15;
+	public final static int DEFAULT_VARS_COUNT=7;
+	public final static int DEFAULT_DOMAIN_SIZE=7;
 	public final static double DEFAULT_P1=0.9;
 	public final static double DEFAULT_P2_MIN=0.5;
 	public final static double DEFAULT_P2_MAX=1.0;
 	public final static double DEFAULT_P2_STEP=0.1;
+	public final static String DEFAULT_OUTPUT_FOLDER="exp";
+	
 	
 	public static final String  PROBLEMS_COUNT = "problems_count";
 	public static final String  VARS_COUNT="vars_count";
@@ -27,6 +31,9 @@ public class Experiment implements Runnable{
 	public static final String  P2_MIN="p2_min";
 	public static final String  P2_MAX="p2_max";
 	public static final String  P2_STEP="p2_step";
+	public static final String  OUTPUT_FOLDER="output_folder";
+	private static final String OUTPUT_FILE_BASE = "%s.csv";
+	private static final String RESULTS_RECORD_BASE = "%.2f,%.2f,%.2f\n";
 	
 	
 	private int _varsCount;
@@ -36,6 +43,7 @@ public class Experiment implements Runnable{
 	private double _p2end;
 	private double _p2step;
 	private int _problemsCount;
+	private String _outputFolder;
 	
 	private class ExpCounter{
 		private Map<String,ExpAlgoCounter> _map;
@@ -44,8 +52,8 @@ public class Experiment implements Runnable{
 			_p1=p1;
 			_p2=p2;
 			_map = new HashMap<String, Experiment.ExpCounter.ExpAlgoCounter>();
-			for(BranchAndBoundSolver solver : Util.makeSolvers(new Problem(1,1,1,1)))
-				_map.put(solver.getName(), new ExpAlgoCounter(solver.getName(),p1,p2));
+			for(String solver : Util.getSolversNames())
+				_map.put(solver, new ExpAlgoCounter(p1,p2));
 		}
 		public void add(ExpCounter counter){
 			for(String solver : _map.keySet()){
@@ -61,17 +69,26 @@ public class Experiment implements Runnable{
 		public double getAverageAssignments(String solver){
 			return _map.get(solver).getAverageAssignments();
 		}
+		public String toString(){
+			String ans = "";
+			for(String solver : _map.keySet()){
+				ans+=String.format("Algorithm: %s, p1: %1.2f, p2: %1.2f, Avg. CCs: %1.2f, Avg. Assignments: %1.2f.",
+						solver,
+						_map.get(solver)._p1,
+						_map.get(solver)._p2,
+						_map.get(solver).getAverageCcs(),
+						_map.get(solver).getAverageAssignments());
+			}
+			return ans;
+		}
 		private class ExpAlgoCounter{
-			public final String _solverName;
 			public final double _p1;
 			public final double _p2;
 			
 			private double _totalCcs;
 			private double _totalAssignments;
 			private int _count;
-			private ExpAlgoCounter(String solverName, double p1,
-					double p2) {
-				this._solverName = solverName;
+			private ExpAlgoCounter(double p1, double p2) {
 				this._p1 = p1;
 				this._p2 = p2;
 				_totalAssignments=0;
@@ -91,30 +108,34 @@ public class Experiment implements Runnable{
 			}
 		}
 	}
-//	private static class ExperimentRecord{
-//		public final String solverName;
-//		public final double averageCcs;
-//		public final double averageAssignments;
-//		public final double p1;
-//		public final double p2;
-//		
-//		public ExperimentRecord(String solverName, double averageCcs,
-//				double averageAssignments, double p1, double p2) {
-//			super();
-//			this.solverName = solverName;
-//			this.averageCcs = averageCcs;
-//			this.averageAssignments = averageAssignments;
-//			this.p1 = p1;
-//			this.p2 = p2;
-//		}
-//		public String toString(){
-//			return String.format("Algorithm: %s, p1: %1.2f, p2: %1.2f, Avg. CCs: %1.2f, Avg. Assignments: %1.2f.",
-//					solverName,p1,p2,averageCcs,averageAssignments);
-//		}
-//	}
 	
-	public static void main(String[] args) {
-		new Experiment().run();
+	public static void main(String[] args) throws FileNotFoundException, IOException {
+		Experiment ex;
+		if (args.length>0){
+			ex=new Experiment(args[0]);
+		}
+		else{
+			Properties conf = new Properties();
+			conf.setProperty(Experiment.OUTPUT_FOLDER, findNewFolder());
+			ex=new Experiment(conf);
+		}
+		ex.run();
+	}
+	private static String findNewFolder() {
+		File pwd = new File(".");
+		int count = 0;
+		boolean exists;
+		String newFolder=DEFAULT_OUTPUT_FOLDER + count;
+		do{
+			exists=false;
+			for(String f : pwd.list()){
+				newFolder = DEFAULT_OUTPUT_FOLDER + count;
+				exists |= f.equals(newFolder);
+			}			
+			count++;
+		}while(exists);
+		new File(newFolder).mkdir();
+		return newFolder;
 	}
 	public Experiment (){
 		this(new Properties());
@@ -125,20 +146,41 @@ public class Experiment implements Runnable{
 	}
 	public Experiment(Properties configuration) {
 		  _varsCount=Integer.parseInt(configuration.getProperty(VARS_COUNT,""+DEFAULT_VARS_COUNT));
-		  _domainSize=Integer.parseInt(configuration.getProperty(DOMAIN_SIZE, ""+DEFAULT_DOMAIN_SIZE));;
+		  _domainSize=Integer.parseInt(configuration.getProperty(DOMAIN_SIZE, ""+DEFAULT_DOMAIN_SIZE));
 		  _p1=Double.parseDouble(configuration.getProperty(P1, DEFAULT_P1+""));
-		  _p2start=Double.parseDouble(configuration.getProperty(P2_MIN, DEFAULT_P2_MIN+""));;
-		  _p2end=Double.parseDouble(configuration.getProperty(P2_MAX, DEFAULT_P2_MAX+""));;;
-		  _p2step=Double.parseDouble(configuration.getProperty(P2_STEP, DEFAULT_P2_STEP+""));;;
-		  _problemsCount=Integer.parseInt(configuration.getProperty(PROBLEMS_COUNT,""+DEFAULT_PROBLEMS_COUNT));;
+		  _p2start=Double.parseDouble(configuration.getProperty(P2_MIN, DEFAULT_P2_MIN+""));
+		  _p2end=Double.parseDouble(configuration.getProperty(P2_MAX, DEFAULT_P2_MAX+""));
+		  _p2step=Double.parseDouble(configuration.getProperty(P2_STEP, DEFAULT_P2_STEP+""));
+		  _problemsCount=Integer.parseInt(configuration.getProperty(PROBLEMS_COUNT,""+DEFAULT_PROBLEMS_COUNT));
+		  _outputFolder=configuration.getProperty(OUTPUT_FOLDER,""+DEFAULT_OUTPUT_FOLDER);
 	}
 	
 	public void run(){
 		out("Experiment start");
+		out("Vars count:"  + _varsCount);
+		out("Domain size:"  + _domainSize);
+		out("P1:"  + _p1);
+		out("P2 start:"  + _p2start);
+		out("P2 end:"  + _p2step);
+		out("P2 Step:"  + _p2end);
+		out("Problems count:"  + _problemsCount);
+		out("Output folder:"  + _outputFolder);
+		
+		Map<String, PrintWriter> fileOut = new HashMap<String, PrintWriter>();
+		for(String solver : Util.getSolversNames()){
+			String filename = String.format(OUTPUT_FILE_BASE, solver);
+			try {
+				File file = new File(_outputFolder,filename);
+				file.createNewFile();
+				fileOut.put(solver, new PrintWriter(new FileWriter(file)));
+			} catch (IOException e) {
+				Util.panic(e.getMessage());
+			}
+		}
+		//TODO: assignments and ccs as longs.
 		final String outFormatBase = "%-30s";
 		final String outFormat = String.format("%1$s%1$s%1$s", outFormatBase);
 		ExpCounter finalResultsCounter = new ExpCounter(_p1,0);
-		Vector<ExpCounter> finalResults = new Vector<Experiment.ExpCounter>();
 		for(double p2 = _p2start;p2<=_p2end;p2+=_p2step){
 			ExpCounter curP2Results = new ExpCounter(_p1,p2);
 			for(int i=0;i<_problemsCount;i++){
@@ -146,7 +188,7 @@ public class Experiment implements Runnable{
 				out("\n#" + i + ": " + p);
 				out(String.format(outFormat,"Solver", "Ccs", "Assignments" ));
 				out("---------------------------------------------------------------");
-				Vector<BranchAndBoundSolver> solvers = Util.makeSolvers(p);
+				Vector<MaxCSPSolver> solvers = Util.makeSolvers(p);
 				for(int j=0;j<solvers.size();j++){
 					MaxCSPSolver solver = solvers.elementAt(j);
 					solver.solve();
@@ -161,16 +203,23 @@ public class Experiment implements Runnable{
 				}
 			}
 			finalResultsCounter.add(curP2Results);
-			finalResults.add(curP2Results);
+			for(String solver : fileOut.keySet()){
+				fileOut.get(solver).write(
+						String.format(
+								RESULTS_RECORD_BASE, 
+								p2,
+								curP2Results.getAverageCcs(solver),
+								curP2Results.getAverageAssignments(solver)));
+			}
+//			finalResults.add(curP2Results);
 		}
-		
+		out(finalResultsCounter);
+		for(PrintWriter pw : fileOut.values()){
+			pw.close();
+		}
 	}
 	private void out(Object msg){
 		Logger.inst().debug(msg.toString());
 	}
-	private void ou(Object msg){
-		Logger.inst().debug(msg.toString(),false);
-	}
-	
 
 }

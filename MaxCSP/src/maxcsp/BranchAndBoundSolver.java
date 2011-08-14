@@ -97,6 +97,6 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	}
 
 	public String getName() {
-		return "B&B";
+		return "BranchAndBound";
 	}
 }
