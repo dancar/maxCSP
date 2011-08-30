@@ -25,7 +25,6 @@ public class PFCDAC extends PFC {
 				_dac.put(new IntPair(var1,value1), DACcount);
 			}
 		}
-		this.stopAfterMaxSeconds = false;
 	}
 	
 	@Override
