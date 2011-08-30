@@ -3,10 +3,25 @@ package maxcsp;
 import java.util.Vector;
 
 public class Util {
+	public static class OutLine{
+		public int _count=0;
+		public void out(Object o){
+			String str = o.toString();
+			_count+=str.length();
+			System.out.print(str);
+		}
+		public void clear(){
+			String clean="";
+			do{
+				clean+="\b";
+			}			while(_count-->0);
+			System.out.print(clean);
+		}
+	}
 	public static Vector<MaxCSPSolver> makeSolvers(Problem p){
 		Vector<MaxCSPSolver> ans = new Vector<MaxCSPSolver>();
 		ans.add(new BranchAndBoundSolver(p));
-		ans.add(new PFC(p));
+//		ans.add(new PFC(p));
 		ans.add(new PFCDAC(p));
 		return ans;
 	}
@@ -22,6 +37,11 @@ public class Util {
 	}
 	public static void panic(String reason){
 		new Exception("PANIC: " + reason).printStackTrace();
+		System.exit(-1);
+	}
+	public static void panic(String reason,Exception e){
+		new Exception("PANIC: " + reason);
+		e.printStackTrace();
 		System.exit(-1);
 	}
 	

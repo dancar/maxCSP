@@ -1,5 +1,8 @@
 package maxcsp;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Logger {
 	private static Logger _inst;
 	
@@ -9,17 +12,14 @@ public class Logger {
 		return Logger._inst;
 	}
 	public void debug(String msg){
-		debug(msg, true);
-	}
-	public void debug(String msg, boolean line){
-		System.out.print(msg);
-		if(line) System.out.println();
+		out(msg);
 	}
 	public void normal(String string) {
-		System.out.print(string);
+		out(string);
 	}
-	public void normaln(String string) {
-		System.out.println(string);
+	private void out(String msg){
+		System.out.println(new SimpleDateFormat("dd/MM/yy HH:mm:ss").format(new Date()) + "| " + msg);
+		System.out.flush();
 	}
 	
 	

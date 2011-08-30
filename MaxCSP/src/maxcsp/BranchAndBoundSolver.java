@@ -1,15 +1,22 @@
 package maxcsp;
 
 public class BranchAndBoundSolver implements MaxCSPSolver{
+	private Util.OutLine outline;
+	private double maxAssignments;
+	private long lastTime;
 	private static final int UNKNOWN = -1;
 	private static final int CONFLICT= 0;
 	private static final int CONSISTENT = 1;
+	public static final double MAX_ASSIGNMENTS = 100000000;
+	public static final int MAX_TIME = 10000;
+	public static boolean stopAfterMaxSeconds = false;
 	public final Problem _problem;
 	private Assignment _bestAssignment;
 	private int _upperBound;
-	private int _ccs;
-	private int _assignments;
+	private double _ccs;
+	private double _assignments;
 	private int[][][][]_checks;
+	private long firstTime;
 	public BranchAndBoundSolver(Problem problem){
 		this._problem=problem;
 		_checks=new int[problem._varCount][problem._domainSize][problem._varCount][problem._domainSize];
@@ -21,6 +28,10 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	}
 	
 	public Assignment solve(){
+		lastTime = System.currentTimeMillis();
+		firstTime = lastTime;
+		outline=new Util.OutLine();
+		maxAssignments=Math.pow(_problem._domainSize, _problem._varCount);
 		_ccs=0;
 		_assignments=0;
 		_upperBound=Integer.MAX_VALUE;
@@ -29,6 +40,22 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 		return new Assignment(_bestAssignment);
 	}
 	protected void branch(Assignment partial, int var, int distance){
+			
+		if (_assignments>MAX_ASSIGNMENTS){
+			_assignments = MAX_ASSIGNMENTS;
+			return;
+		}
+		if (System.currentTimeMillis()-lastTime > 1000){
+			double percent = ((double)_assignments) / maxAssignments;
+			outline.clear();
+			outline.out("" + String.format("%12E (%2.9f%%)",_assignments,percent));
+			lastTime = System.currentTimeMillis();
+			
+		}
+		if (stopAfterMaxSeconds && System.currentTimeMillis() - firstTime > MAX_TIME){
+			return;
+		}
+		
 		if(var==_problem._varCount){ //LEAF
 			if(distance<_upperBound){
 				_upperBound=distance;
@@ -51,6 +78,7 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 				}
 			}
 		}
+		outline.clear();
 	}
 	
 	/**
@@ -89,10 +117,10 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	public int solutionCost() {
 		return _upperBound;
 	}
-	public int solutionCCs(){
+	public double solutionCCs(){
 		return _ccs;
 	}
-	public int solutionAssignments(){
+	public double solutionAssignments(){
 		return _assignments;
 	}
 
