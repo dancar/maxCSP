@@ -207,7 +207,7 @@ public class Experiment implements Runnable{
 						solver.solve();
 //						if(j>0)
 //							if(solver.solutionCost()!=solvers.elementAt(j-1).solutionCost())
-//								Util.panic(String.format("Inequal cost:%d(%s),%d(%s)",
+//								Util.panic(String.format("Unequal cost:%d(%s),%d(%s)",
 //										solvers.elementAt(j-1).solutionCost(),
 //										solvers.elementAt(j-1).getName(),
 //										solver.solutionCost(),

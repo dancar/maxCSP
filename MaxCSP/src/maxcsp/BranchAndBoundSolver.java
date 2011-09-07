@@ -104,8 +104,14 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 		} 
 		return ans;
 	}
-	protected boolean check(int var1, int value1, int var2, int value2) {
+	protected boolean check(int var1, int value1, int var2, int value2) {		
 		int cache=_checks[var1][value1][var2][value2];
+		boolean sanityCheck = 
+				(cache==UNKNOWN)
+				|(cache==CONSISTENT)
+				|(cache==CONFLICT);
+		if (!sanityCheck)
+			Util.panic("Cache sanity check failure.");
 		if(cache==UNKNOWN){
 			cache=_problem.check(var1, value1, var2, value2)?CONSISTENT:CONFLICT;
 			_ccs++;
