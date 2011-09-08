@@ -4,9 +4,6 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	private Util.OutLine outline;
 	private double maxAssignments;
 	private long lastTime;
-	private static final int UNKNOWN = -1;
-	private static final int CONFLICT= 0;
-	private static final int CONSISTENT = 1;
 	public static final double MAX_ASSIGNMENTS = 100000000;
 	public static final int MAX_TIME = 10000;
 	public static boolean stopAfterMaxSeconds = false;
@@ -15,45 +12,40 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	private int _upperBound;
 	private double _ccs;
 	private double _assignments;
-	private int[][][][]_checks;
 	private long firstTime;
 	public BranchAndBoundSolver(Problem problem){
 		this._problem=problem;
-		_checks=new int[problem._varCount][problem._domainSize][problem._varCount][problem._domainSize];
-		for(int[][][] var1:_checks)
-			for(int[][] val1: var1)
-				for(int[] var2: val1)
-					for(int val2=0;val2<var2.length;val2++)
-						var2[val2]=UNKNOWN;
 	}
 	
 	public Assignment solve(){
-		lastTime = System.currentTimeMillis();
-		firstTime = lastTime;
-		outline=new Util.OutLine();
-		maxAssignments=Math.pow(_problem._domainSize, _problem._varCount);
+		lastTime = System.currentTimeMillis(); //Timeout measurement 
+		firstTime = lastTime;	//Timeout measurement
+		outline=new Util.OutLine(); //for console output
+		maxAssignments=Math.pow(_problem._domainSize, _problem._varCount); 
 		_ccs=0;
 		_assignments=0;
 		_upperBound=Integer.MAX_VALUE;
-		Assignment init = new Assignment(_problem._varCount);
+		Assignment init = new Assignment(_problem._varCount); //Empty assignment
 		branch(init,0,0);
 		return new Assignment(_bestAssignment);
 	}
 	protected void branch(Assignment partial, int var, int distance){
-			
-		if (_assignments>MAX_ASSIGNMENTS){
-			_assignments = MAX_ASSIGNMENTS;
-			return;
-		}
-		if (System.currentTimeMillis()-lastTime > 1000){
-			double percent = ((double)_assignments) / maxAssignments;
-			outline.clear();
-			outline.out("" + String.format("%12E (%2.9f%%)",_assignments,percent));
-			lastTime = System.currentTimeMillis();
-			
-		}
-		if (stopAfterMaxSeconds && System.currentTimeMillis() - firstTime > MAX_TIME){
-			return;
+		
+		{//Timeout implementation:
+			if (_assignments>MAX_ASSIGNMENTS){
+				_assignments = MAX_ASSIGNMENTS;
+				return;
+			}
+			if (System.currentTimeMillis()-lastTime > 1000){
+				double percent = ((double)_assignments) / maxAssignments;
+				outline.clear();
+				outline.out("" + String.format("%12E (%2.9f%%)",_assignments,percent));
+				lastTime = System.currentTimeMillis();
+				
+			}
+			if (stopAfterMaxSeconds && System.currentTimeMillis() - firstTime > MAX_TIME){
+				return;
+			}
 		}
 		
 		if(var==_problem._varCount){ //LEAF
@@ -104,20 +96,9 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 		} 
 		return ans;
 	}
-	protected boolean check(int var1, int value1, int var2, int value2) {		
-		int cache=_checks[var1][value1][var2][value2];
-		boolean sanityCheck = 
-				(cache==UNKNOWN)
-				|(cache==CONSISTENT)
-				|(cache==CONFLICT);
-		if (!sanityCheck)
-			Util.panic("Cache sanity check failure.");
-		if(cache==UNKNOWN){
-			cache=_problem.check(var1, value1, var2, value2)?CONSISTENT:CONFLICT;
-			_ccs++;
-			_checks[var1][value1][var2][value2]=cache;
-		}
-		return cache==CONSISTENT;
+	protected boolean check(int var1, int value1, int var2, int value2) {
+		_ccs++;
+		return _problem.check(var1, value1, var2, value2);
 	}
 	
 	public int solutionCost() {

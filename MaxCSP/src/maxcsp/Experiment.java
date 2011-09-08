@@ -172,7 +172,7 @@ public class Experiment implements Runnable{
 		out(desc);
 		PrintWriter descFile=null;
 		try {
-			descFile = new PrintWriter(new FileOutputStream(new File(_outputFolder,"description.txt")));
+			descFile = new PrintWriter(new FileOutputStream(new File(_outputFolder,"conf.txt")));
 		} catch (FileNotFoundException e1) {
 			Util.panic("Description file error", e1);
 		}
@@ -222,7 +222,6 @@ public class Experiment implements Runnable{
 					try {
 						pw = new PrintWriter(new FileOutputStream(files.get(solver),true));
 					} catch (FileNotFoundException e) {
-						
 						Util.panic("Experiment run: error writing to results file for " + solver, e);
 					}
 					pw.write(
@@ -240,21 +239,21 @@ public class Experiment implements Runnable{
 	
 	}
 	private String description() {
+		final String format = "\n%s=%s";
 		String ans = "";
-		ans+="Experiment Description:";
-		ans+="\nVars count:"  + _varsCount;
-		ans+="\nDomain size:"  + _domainSize;
-		ans+="\nP1 start:"  + _p1min;
-		ans+="\nP1 step:"  + _p1step;
-		ans+="\nP1 end:"  + _p1max;
-		ans+="\nP2 start:"  + _p2min;
-		ans+="\nP2 step:"  + _p2step;
-		ans+="\nP2 end:"  + _p2max;
-		ans+="\nProblems count:"  + _problemsCount;
-		ans+="\nMaximum assignments: " + BranchAndBoundSolver.MAX_ASSIGNMENTS;
-		ans+="\nTimout: " + (BranchAndBoundSolver.stopAfterMaxSeconds ?BranchAndBoundSolver.MAX_TIME + " millis ": " none");
-		ans+="\nOutput folder:"  + _outputFolder;
-		return ans;
+		ans+=String.format(format,VARS_COUNT ,  _varsCount);
+		ans+=String.format(format,DOMAIN_SIZE, _domainSize);
+		ans+=String.format(format,  P1_MIN, _p1min);
+		ans+=String.format(format,  P1_STEP, _p1step);
+		ans+=String.format(format,  P1_MAX, _p1max);
+		ans+=String.format(format,P2_MIN, _p2min);
+		ans+=String.format(format,  P2_STEP, _p2step);
+		ans+=String.format(format,  P2_MAX, _p2max);
+		ans+=String.format(format,  PROBLEMS_COUNT,_problemsCount);
+		ans+=String.format(format, "*Max assignments", BranchAndBoundSolver.MAX_ASSIGNMENTS);
+		ans+=String.format(format,"*Timeout" , (BranchAndBoundSolver.stopAfterMaxSeconds ?BranchAndBoundSolver.MAX_TIME + " millis ": " none"));
+		ans+=String.format(format,"*output folder"  , _outputFolder);
+		return ans.trim();
 	}
 	private void out(Object msg){
 		Logger.inst().debug(msg.toString());
