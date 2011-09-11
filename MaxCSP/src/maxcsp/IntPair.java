@@ -13,7 +13,7 @@ public class IntPair{
 	}
 	@Override
 	public int hashCode(){
-		return _left+_right;
+		return (int)(_left*Math.pow(10, 3)) + _right;
 	}
 	@Override 
 	public boolean equals(Object other){
