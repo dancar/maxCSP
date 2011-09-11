@@ -18,6 +18,7 @@ public class Problem {
 	public final double _P2;
 	public final int[] _vars;
 	public final int[] _domain;
+	private final boolean _consistent[][][][];
 	protected final Map<IntPair, Constraint> _constraints;
 	
 
@@ -47,6 +48,7 @@ public class Problem {
 				}
 			}
 		}
+		updateConstraints();
 	}
 	public Problem(int varsCount, int domainSize, Collection<Constraint> constraints){
 		this(varsCount, domainSize, UNKNOWN, UNKNOWN, constraints);
@@ -55,6 +57,7 @@ public class Problem {
 	public Problem(int varsCount, int domainSize, double p1, double p2, Collection<Constraint> constraints){
 		this._varCount=varsCount;
 		this._domainSize=domainSize;
+		this._consistent = new boolean[varsCount][varsCount][domainSize][domainSize];
 		this._P1=p1;
 		this._P2=p2;
 		this._constraints=new HashMap<IntPair,Constraint>();
@@ -63,9 +66,40 @@ public class Problem {
 		for(Constraint c : constraints){
 			this._constraints.put(new IntPair(c._leftVar,c._rightVar), c);
 		}
+		updateConstraints();
 	}
 	
-	public boolean check(int var1, int value1, int var2, int value2){
+	private void updateConstraints() {
+		for(int var1=0;var1<_varCount;var1++)
+			for(int var2=0;var2<_varCount;var2++)
+				_consistent[var1][var2]=null;
+		
+		for(Constraint c : this._constraints.values()){
+			int var1=c._leftVar, var2=c._rightVar;
+			_consistent[var1][var2]=new boolean[_domainSize][_domainSize];
+			_consistent[var2][var1]=new boolean[_domainSize][_domainSize];
+			for(IntPair p: c.getAllowedValues()){
+				int val1=p._left, val2=p._right;
+				_consistent[var1][var2][val1][val2]=true;
+				_consistent[var2][var1][val2][val1]=true;
+			}
+		}
+		
+	}
+
+	public boolean check(int var1, int value1, int var2, int value2) {
+		boolean ans = false;
+		if (!(Util.order(-1, var1, _varCount) & Util.order(-1, var2, _varCount))) {
+			Util.panic("problem check: invalid arguments)");
+		}
+		boolean[][] values = _consistent[var1][var2];
+		ans = (values == null ? true : 
+			Util.order(-1, value1, _domainSize)
+			&Util.order(-1, value2, _domainSize) 
+			&& values[value1][value2]);
+		return ans;
+	}
+	public boolean oldCheck(int var1, int value1, int var2, int value2){
 		boolean ans = true;
 		if(Util.order(-1,var1,var2,_varCount)){
 			Constraint c = this._constraints.get(new IntPair(var1,var2));

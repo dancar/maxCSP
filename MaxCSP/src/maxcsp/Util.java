@@ -3,19 +3,24 @@ package maxcsp;
 import java.util.Vector;
 
 public class Util {
+	private final static boolean work = Logger.inst().level>Logger.LEVEL_LESS;
 	public static class OutLine{
 		public int _count=0;
 		public void out(Object o){
-			String str = o.toString();
-			_count+=str.length();
-			System.out.print(str);
+			if(work){
+				String str = o.toString();
+				_count+=str.length();
+				System.out.print(str);
+			}
 		}
 		public void clear(){
-			String clean="";
-			do{
-				clean+="\b";
-			}			while(_count-->0);
-			System.out.print(clean);
+			if(work){
+				String clean="";
+				do{
+					clean+="\b";
+				}			while(_count-->0);
+				System.out.print(clean);
+			}
 		}
 	}
 	public static Vector<MaxCSPSolver> makeSolvers(Problem p){
