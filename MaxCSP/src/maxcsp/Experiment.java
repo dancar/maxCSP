@@ -20,7 +20,7 @@ public class Experiment implements Runnable{
 	public final static double DEFAULT_P1_MIN=0.2;
 	public final static double DEFAULT_P1_STEP=0.6;
 	public final static double DEFAULT_P1_MAX=0.8;
-	public final static double DEFAULT_P2_MIN=0.1 ;
+	public final static double DEFAULT_P2_MIN=0.6 ;
 	public final static double DEFAULT_P2_STEP=0.1;
 	public final static double DEFAULT_P2_MAX=0.9;
 	public final static String DEFAULT_OUTPUT_FOLDER="exp";
