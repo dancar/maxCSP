@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Experiment implements Runnable{
 	
@@ -20,7 +23,7 @@ public class Experiment implements Runnable{
 	public final static double DEFAULT_P1_MIN=0.2;
 	public final static double DEFAULT_P1_STEP=0.6;
 	public final static double DEFAULT_P1_MAX=0.8;
-	public final static double DEFAULT_P2_MIN=0.6 ;
+	public final static double DEFAULT_P2_MIN=0.1 ;
 	public final static double DEFAULT_P2_STEP=0.1;
 	public final static double DEFAULT_P2_MAX=0.9;
 	public final static String DEFAULT_OUTPUT_FOLDER="exp";
@@ -38,7 +41,6 @@ public class Experiment implements Runnable{
 	public static final String  OUTPUT_FOLDER="output_folder";
 	private static final String OUTPUT_FILE_BASE = "%s_%1.2f.csv";
 	private static final String RESULTS_RECORD_BASE = "%.2f\t%.2f\t%.2f\n";
-	
 	
 	private int _varsCount;
 	private int _domainSize;
@@ -58,12 +60,12 @@ public class Experiment implements Runnable{
 			for(String solver : Util.getSolversNames())
 				_map.put(solver, new ExpAlgoCounter(p1,p2));
 		}
-		public void add(ExpCounter counter){
+		public synchronized void add(ExpCounter counter){
 			for(String solver : _map.keySet()){
 				add(solver,counter.getAverageCcs(solver),counter.getAverageAssignments(solver));
 			}
 		}
-		public void add(String solver, double ccs, double assignments){
+		public synchronized void add(String solver, double ccs, double assignments){
 			_map.get(solver).add(ccs, assignments);
 		}
 		public double getAverageCcs(String solver){
@@ -165,14 +167,11 @@ public class Experiment implements Runnable{
 	}
 	
 	public void run(){
-		final String outFormatBase = "%-30s";
-		final String outFormat = String.format("%1$s%1$s%1$s", outFormatBase);
-		
 		String desc = description();
 		out(desc);
 		PrintWriter descFile=null;
 		try {
-			descFile = new PrintWriter(new FileOutputStream(new File(_outputFolder,"conf.txt")));
+			descFile = new PrintWriter(new FileOutputStream(new File(_outputFolder,"description.txt")));
 		} catch (FileNotFoundException e1) {
 			Util.panic("Description file error", e1);
 		}
@@ -194,34 +193,54 @@ public class Experiment implements Runnable{
 				}
 			}
 			for(double p2 = _p2min;p2<=_p2max;p2+=_p2step){
-				ExpCounter curP2Results = new ExpCounter(p1,p2);
+				final double p1f=p1;
+				final double p2f=p2;
+				final ExpCounter curP2Results = new ExpCounter(p1,p2);
+				ExecutorService tpool = Executors.newFixedThreadPool(_problemsCount*Util.getSolversNames().size());
 				for(int i=0;i<_problemsCount;i++){
-					Problem p = new Problem(_varsCount, _domainSize, p1,p2);
-					out("");
+					final Problem p = new Problem(_varsCount, _domainSize, p1f,p2f);
 					out("#" + (counter++) + ": " + p);
-					out(String.format(outFormat,"Solver", "Ccs", "Assignments" ));
-					String line="";for(@SuppressWarnings("unused") int nothing : new int[71])line+="-"; out(line);
-					Vector<MaxCSPSolver> solvers = Util.makeSolvers(p);
+					final int problemNum= counter;
+//					out(String.format(outFormat,"Solver", "Ccs", "Assignments" ));
+//					String line="";for(@SuppressWarnings("unused") int nothing : new int[71])line+="-"; out(line);
+					final Vector<MaxCSPSolver> solvers = Util.makeSolvers(p);
 					for(int j=0;j<solvers.size();j++){
-						MaxCSPSolver solver = solvers.elementAt(j);
-						solver.solve();
-//						if(j>0)
-//							if(solver.solutionCost()!=solvers.elementAt(j-1).solutionCost())
-//								Util.panic(String.format("Unequal cost:%d(%s),%d(%s)",
-//										solvers.elementAt(j-1).solutionCost(),
-//										solvers.elementAt(j-1).getName(),
-//										solver.solutionCost(),
-//										solver.getName()));
-						curP2Results.add(solver.getName(),solver.solutionCCs(),solver.solutionAssignments());
-						out(String.format(outFormat, solver.getName(), solver.solutionCCs(),solver.solutionAssignments()));
+						final MaxCSPSolver solver = solvers.elementAt(j);
+						tpool.execute(new Runnable(){
+							@Override
+							public void run() {
+								out(String.format(
+										"(start) #d, %s",
+										problemNum,
+										solver.getName()
+										));
+								solver.solve();
+								curP2Results.add(solver.getName(),solver.solutionCCs(),solver.solutionAssignments());
+								out(String.format(
+										"(done) #%d, %s, CCs: %f, Assignments: %f",
+										problemNum,
+										solver.getName(),
+										solver.solutionCCs(),
+										solver.solutionAssignments()));
+							}
+						});
 					}
 				}
+				out("waiting for " + counter);
+				tpool.shutdown();
+				try {
+					tpool.awaitTermination(1, TimeUnit.HOURS);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				out(counter + " done.");
 				finalResultsCounter.add(curP2Results);
 				for(String solver : files.keySet()){
 					PrintWriter pw=null;
 					try {
 						pw = new PrintWriter(new FileOutputStream(files.get(solver),true));
 					} catch (FileNotFoundException e) {
+						
 						Util.panic("Experiment run: error writing to results file for " + solver, e);
 					}
 					pw.write(
@@ -239,21 +258,21 @@ public class Experiment implements Runnable{
 	
 	}
 	private String description() {
-		final String format = "\n%s=%s";
 		String ans = "";
-		ans+=String.format(format,VARS_COUNT ,  _varsCount);
-		ans+=String.format(format,DOMAIN_SIZE, _domainSize);
-		ans+=String.format(format,  P1_MIN, _p1min);
-		ans+=String.format(format,  P1_STEP, _p1step);
-		ans+=String.format(format,  P1_MAX, _p1max);
-		ans+=String.format(format,P2_MIN, _p2min);
-		ans+=String.format(format,  P2_STEP, _p2step);
-		ans+=String.format(format,  P2_MAX, _p2max);
-		ans+=String.format(format,  PROBLEMS_COUNT,_problemsCount);
-		ans+=String.format(format, "*Max assignments", BranchAndBoundSolver.MAX_ASSIGNMENTS);
-		ans+=String.format(format,"*Timeout" , (BranchAndBoundSolver.stopAfterMaxSeconds ?BranchAndBoundSolver.MAX_TIME + " millis ": " none"));
-		ans+=String.format(format,"*output folder"  , _outputFolder);
-		return ans.trim();
+		ans+="Experiment Description:";
+		ans+="\nVars count:"  + _varsCount;
+		ans+="\nDomain size:"  + _domainSize;
+		ans+="\nP1 start:"  + _p1min;
+		ans+="\nP1 step:"  + _p1step;
+		ans+="\nP1 end:"  + _p1max;
+		ans+="\nP2 start:"  + _p2min;
+		ans+="\nP2 step:"  + _p2step;
+		ans+="\nP2 end:"  + _p2max;
+		ans+="\nProblems count:"  + _problemsCount;
+		ans+="\nMaximum assignments: " + BranchAndBoundSolver.MAX_ASSIGNMENTS;
+		ans+="\nTimout: " + (BranchAndBoundSolver.stopAfterMaxSeconds ?BranchAndBoundSolver.MAX_TIME + " millis ": " none");
+		ans+="\nOutput folder:"  + _outputFolder;
+		return ans;
 	}
 	private void out(Object msg){
 		Logger.inst().debug(msg.toString());
