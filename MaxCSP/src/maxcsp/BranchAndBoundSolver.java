@@ -4,7 +4,7 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	private Util.OutLine outline;
 	private double maxAssignments;
 	private long lastTime;
-	public static final double MAX_ASSIGNMENTS = 25000000;
+	public static final double MAX_ASSIGNMENTS = 100000000;
 	public static final int MAX_TIME = 10000;
 	public static boolean stopAfterMaxSeconds = false;
 	public final Problem _problem;

@@ -25,7 +25,7 @@ public class Util {
 	}
 	public static Vector<MaxCSPSolver> makeSolvers(Problem p){
 		Vector<MaxCSPSolver> ans = new Vector<MaxCSPSolver>();
-//		ans.add(new BranchAndBoundSolver(p));
+		ans.add(new BranchAndBoundSolver(p));
 //		ans.add(new PFC(p));
 		ans.add(new PFCDAC(p));
 		return ans;

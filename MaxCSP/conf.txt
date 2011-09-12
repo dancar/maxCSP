@@ -1,0 +1,9 @@
+vars_count=10
+domain_size=15
+p1_min=0.2
+p1_step=0.6
+p1_max=0.8
+p2_min=0.1
+p2_step=0.1
+p2_max=0.9
+problems_count=50

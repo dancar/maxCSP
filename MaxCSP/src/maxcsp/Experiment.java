@@ -199,7 +199,7 @@ public class Experiment implements Runnable{
 				ExecutorService tpool = Executors.newFixedThreadPool(_problemsCount*Util.getSolversNames().size());
 				for(int i=0;i<_problemsCount;i++){
 					final Problem p = new Problem(_varsCount, _domainSize, p1f,p2f);
-					out("#" + (counter++) + ": " + p);
+					out("Problem #" + (counter++) + ": " + p);
 					final int problemNum= counter;
 //					out(String.format(outFormat,"Solver", "Ccs", "Assignments" ));
 //					String line="";for(@SuppressWarnings("unused") int nothing : new int[71])line+="-"; out(line);
@@ -210,14 +210,14 @@ public class Experiment implements Runnable{
 							@Override
 							public void run() {
 								out(String.format(
-										"(start) #d, %s",
+										"(start) %d, %s",
 										problemNum,
 										solver.getName()
 										));
 								solver.solve();
 								curP2Results.add(solver.getName(),solver.solutionCCs(),solver.solutionAssignments());
 								out(String.format(
-										"(done) #%d, %s, CCs: %f, Assignments: %f",
+										"(done) #%d, %s, CCs: %8E, Assignments: %8E",
 										problemNum,
 										solver.getName(),
 										solver.solutionCCs(),
