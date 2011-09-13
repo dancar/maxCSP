@@ -110,7 +110,6 @@ public class BranchAndBoundSolver implements MaxCSPSolver{
 	public double solutionAssignments(){
 		return _assignments;
 	}
-
 	public String getName() {
 		return "BranchAndBound";
 	}

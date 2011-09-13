@@ -1,5 +1,4 @@
 package maxcsp;
-
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -11,6 +10,17 @@ import java.util.Properties;
 import java.util.Vector;
 
 public class Problem {
+	public static final String P_VARIABLE_COUNT="variable_count";
+	public static final String P_DOMAIN_SIZE="domain_size";
+	public static final String P_P1 = "p1";
+	public static final String P_P2 = "p2";
+	public static final String P_CONSTRAINTS_COUNT = "constraints_count";
+	public static final String P_CONSTRAINT = "constraint_%d_%s";
+	public static final String P_VAR_LEFT="left";
+	public static final String P_VAR_RIGHT="right";
+	public static final String P_POSSIBLE_VALUES = "possible_values";
+	public static final String P_PAIR_SPLIT = ":";
+	public static final String P_LIST_SPLIT=",";
 	public static final int UNKNOWN = -1;
 	public final int _varCount;
 	public final int _domainSize;
@@ -20,8 +30,6 @@ public class Problem {
 	public final int[] _domain;
 	private final boolean _consistent[][][][];
 	protected final Map<IntPair, Constraint> _constraints;
-	
-
 	
 	public Problem(int varsCount, int domainSize, double p1, double p2) {
 		this(varsCount, domainSize, p1, p2,new Vector<Constraint>());
@@ -38,7 +46,6 @@ public class Problem {
 							else{
 								addConstraint = true;
 							}
-							
 						}
 					}
 					if(addConstraint){
@@ -127,18 +134,6 @@ public class Problem {
 		return ans;
 	
 	}
-	public static final String P_VARIABLE_COUNT="variable_count";
-	public static final String P_DOMAIN_SIZE="domain_size";
-	public static final String P_P1 = "p1";
-	public static final String P_P2 = "p2";
-	public static final String P_CONSTRAINTS_COUNT = "constraints_count";
-	public static final String P_CONSTRAINT = "constraint_%d_%s";
-	public static final String P_VAR_LEFT="left";
-	public static final String P_VAR_RIGHT="right";
-	public static final String P_POSSIBLE_VALUES = "possible_values";
-	public static final String P_PAIR_SPLIT = ":";
-	public static final String P_LIST_SPLIT=",";
-
 	
 	public String print(){
 		String ans = "";

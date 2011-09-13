@@ -1,15 +1,27 @@
 package maxcsp;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class PFCDAC extends PFC {
-	protected java.util.HashMap<IntPair,Integer>_dac;
+	protected Map<IntPair,Integer>_dac;
+	private int _memo[][][][];
+	private final static int
+		UNKNOWN=7,
+		CONSISTENT=11,
+		CONFLICT=-19;
 	/**
 	 * Calculates for each variable and value,
 	 * the amount of variables later in the order with which the two are arc-inconsistent.  
 	 */
 	public PFCDAC(Problem problem) {
 		super(problem);
+		_memo = new int[problem._varCount][problem._varCount][problem._domainSize][problem._domainSize];
+		for(int[][][] var1: _memo)
+			for(int[][] var2: var1)
+				for(int[] val1: var2)
+					for(int val2=0;val2<problem._domainSize;val2++)
+						val1[val2]=UNKNOWN;
 		this._dac = new HashMap<IntPair, Integer>();
 		for(int var1:problem._vars){
 			for(int value1 : problem._domain){
@@ -26,37 +38,28 @@ public class PFCDAC extends PFC {
 			}
 		}
 	}
-	
+	@Override
+	protected boolean check(int var1, int value1, int var2, int value2) {
+		boolean ans;
+		switch (_memo[var1][var2][value1][value2]){
+		case UNKNOWN:
+			_memo[var1][var2][value1][value2]=((ans=super.check(var1, value1, var2, value2))?CONSISTENT:CONFLICT);break;
+		case CONSISTENT:
+			ans=true;break;
+		case CONFLICT:
+			ans=false;break;
+		default: Util.panic("PFCDAC check: invalid cache value");ans=false;break; 
+		}
+		return ans;
+	}
 	@Override
 	protected int calcIC(Assignment ass, int var, int val) {
 		int ans = calcSingleVariableDistance(var, val, ass)
 				+ _dac.get(new IntPair(var,val));
 		return ans;
 	}
-	
 	@Override
 	public String getName() {
 		return "PFC_DAC";
 	}
-	
-
 }
-//private class IntTrio{
-//	public final int _x,_y,_z;
-//	public IntTrio(int _x, int _y, int _z) {
-//		this._x = _x;
-//		this._y = _y;
-//		this._z = _z;
-//	}
-//	@Override
-//	public int hashCode(){return _x+_y+_z;}
-//	@Override
-//	public boolean equals(Object other){
-//		boolean ans = false;
-//		if(other instanceof IntTrio){
-//			IntTrio o = (IntTrio) other;
-//			ans=o._x==_x & o._y==_y & o._z==_z;
-//		}
-//		return ans;
-//	}
-//}
